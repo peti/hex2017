@@ -1,5 +1,9 @@
 # Using Nix in Docker
 
+The simplest way is to run:
+
+    $ docker run -it --name hex2017 psimons/hex2017 bash -l
+
 Run the command
 
     $ docker build -t hex2017 .

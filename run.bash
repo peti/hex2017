@@ -20,4 +20,4 @@ exec docker run                       \
        -h hex2017                     \
        -v "$PWD/..":/root/src         \
        hex2017                        \
-       /nix/var/nix/profiles/default/bin/bash -li
+       "$@"

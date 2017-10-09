@@ -34,3 +34,5 @@ RUN nix-env -iA cabal-install stack ghc
 RUN cabal update
 
 WORKDIR /root
+
+CMD ["/nix/var/nix/profiles/default/bin/bash", "-li"]

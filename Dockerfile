@@ -1,38 +1,58 @@
-FROM nixos/nix
+FROM alpine
 
-# Switch the installation to the release-17.09 branch.
-RUN nix-channel --add https://nixos.org/channels/nixos-17.09 nixpkgs \
+# Enable HTTPS support in wget.
+RUN apk add --update openssl
+
+# Download Nix and install it into the system.
+RUN wget -O- https://nixos.org/releases/nix/nix-1.11.14/nix-1.11.14-x86_64-linux.tar.bz2 | bzcat - | tar xf - \
+ && addgroup -g 30000 -S nixbld \
+ && for i in $(seq 1 30); do adduser -S -D -h /var/empty -g "Nix build user $i" -u $((30000 + i)) -G nixbld nixbld$i ; done \
+ && mkdir -m 0755 /nix && USER=root sh nix-*-x86_64-linux/install \
+ && ln -s /nix/var/nix/profiles/default/etc/profile.d/nix.sh /etc/profile.d/ \
+ && rm -r /nix-*-x86_64-linux \
+ && rm -r /var/cache/apk/* \
+ && . /nix/var/nix/profiles/default/etc/profile.d/nix.sh \
+ && nix-channel --add https://nixos.org/channels/nixos-17.09 nixpkgs \
  && nix-channel --update \
+ && echo >>/etc/profile export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs/nixpkgs \
+ && rm -r ~/.nix-defexpr \
+ && ln -s /nix/var/nix/profiles/per-user/root/channels/nixpkgs/nixpkgs ~/.nix-defexpr \
  && nix-env -u --always \
- && echo >>/etc/profile export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs/nixpkgs
-
-# Make sure that nix-env and friends find all Nixpkgs attributes in the
-# top-level namespace, i.e. without any "nixpkgs" or "nixos" prefixes.
-RUN rm -r ~/.nix-defexpr \
- && ln -s /nix/var/nix/profiles/per-user/root/channels/nixpkgs/nixpkgs ~/.nix-defexpr
-
-# Install a basic system development environment.
-RUN nix-env -iA       \
-      bash-completion \
-      bashInteractive \
-      coreutils       \
-      curl            \
-      dnsutils        \
-      gcc             \
-      git             \
-      nano            \
-      openssh         \
-      pkgconfig       \
-      wget            \
+ && nix-env -iA      \
+     bash-completion \
+     bashInteractive \
+     binutils        \
+     coreutils       \
+     curl            \
+     dnsutils        \
+     gcc             \
+     nano            \
+     pkgconfig       \
+     wget            \
  && echo >>/etc/shells /nix/var/nix/profiles/default/bin/bash \
  && echo >>/etc/profile 'test -z "${BASH_VERSION:-}" || . /etc/bash.bashrc' \
  && echo >>/etc/bash.bashrc BASH_COMPLETION_COMPAT_DIR=~/.nix-profile/etc/bash_completion.d \
- && echo >>/etc/bash.bashrc 'test -z "${PS1:-}" || . ~/.nix-profile/share/bash-completion/bash_completion'
+ && echo >>/etc/bash.bashrc 'test -z "${PS1:-}" || . ~/.nix-profile/share/bash-completion/bash_completion' \
+ && chmod -R ugo-w /nix/store/* \
+ && nix-collect-garbage --delete-old \
+ && nix-store --optimise
 
 # Set up a basic Haskell development environment.
-RUN nix-env -iA cabal-install stack ghc
-RUN cabal update
+# RUN nix-env -iA cabal-install stack ghc
+
+# RUN cabal update
 
 WORKDIR /root
-
 CMD ["/nix/var/nix/profiles/default/bin/bash", "-li"]
+
+
+
+# # ONBUILD ENV \
+# #     ENV=/etc/profile \
+# #     GIT_SSL_CAINFO=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt \
+# #     NIX_SSL_CERT_FILE=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt
+# #
+# # ENV \
+# #     ENV=/etc/profile \
+# #     GIT_SSL_CAINFO=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt \
+# #     NIX_SSL_CERT_FILE=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt \

@@ -13,7 +13,9 @@ RUN wget -O- https://nixos.org/releases/nix/nix-1.11.14/nix-1.11.14-x86_64-linux
  && rm -r /var/cache/apk/* \
  && echo >>/etc/profile 'GIT_SSL_CAINFO=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt' \
  && echo >>/etc/profile 'SSL_CERT_FILE=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt' \
- && echo >>/etc/profile 'export GIT_SSL_CAINFO SSL_CERT_FILE' \
+ && echo >>/etc/profile 'NIX_SSL_CERT_FILE=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt' \
+ && echo >>/etc/profile 'SYSTEM_CERTIFICATE_PATH=/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt' \
+ && echo >>/etc/profile 'export GIT_SSL_CAINFO SSL_CERT_FILE NIX_SSL_CERT_FILE SYSTEM_CERTIFICATE_PATH' \
  && . /etc/profile \
  && nix-channel --add https://nixos.org/channels/nixos-17.09 nixpkgs \
  && nix-channel --update \

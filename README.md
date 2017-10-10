@@ -1,17 +1,26 @@
-# Using Nix in Docker
+# Haskell eXchange 2017
 
-The simplest way is to run:
+This docker image provides a development environment suitable for participating
+inthe Nix workshop at [Haskell eXchange 2017]. The easiest way to use this
+environment is to run the following commands:
 
-    $ docker run -it --name hex2017 psimons/hex2017 bash -l
+    $ git clone git://github.com/basvandijk/nix-workshop.git
+    $ docker run -it -v $PWD/nix-workshop:/root/workshop psimons/hex2017
 
-Run the command
+This gives you a virtual machine with the following development tools installed
+and ready for use:
 
-    $ docker build -t hex2017 .
+* Nix 1.11.15
+* Nixpkgs 17.09
+* cabal2nix 2.5
+* cabal-install 2.0.0.0
+* stack 1.5.1
+* GHC 8.0.2
+* alex 3.2.2
+* happy 1.19.7
+* gcc 6.4.0
 
-to build a container image with a proper Nix installation that can be used to
-run all examples fromm this tutorial. Then use the command
+We have tested this functiality with docker version 17.09.0, but in all
+likeliehood earlier version will work fine, too.
 
-    $ docker run -it --name hex2017 hex2017 bash -l
-
-to enter the virtual environment. We have tested this functiality with docker
-version 17.06.1, but in all likeliehood earlier version will work fine, too.
+[Haskell eXchange 2017]: https://skillsmatter.com/conferences/8522-haskell-exchange-2017

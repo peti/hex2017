@@ -32,5 +32,12 @@ RUN nix-env -f "<nixpkgs>" -iA  \
       wget                      \
  && nix-store --optimise
 
+# binutils and gcc conflict in 'as' even though both provide the exact same
+# binary. :-( So we must perform priority magic to install both of them into
+# the same environment. We need binutils for "ar", which is missing from gcc.
+RUN eval nix-env --set-flag priority 0 $(nix-instantiate --eval "<nixpkgs>" -A gcc.name) \
+ && nix-env -f "<nixpkgs>" -iA binutils                                                  \
+ && nix-store --optimise
+
 WORKDIR /root
 CMD ["/nix/var/nix/profiles/default/bin/bash", "--login", "-i"]
